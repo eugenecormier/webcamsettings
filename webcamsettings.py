@@ -66,14 +66,7 @@ def callback(*args):
         elif i.find('menu') != -1 and i.find('flags') == -1:
             end = len(i)
             deviceSettings[i.split()[0]] = ['menu', i[i.find('value=') + 6: end]]
-        #deviceSettings[i.split()[0]] = ['menu', i[i.find('value=') + 6: end]]
     print(deviceSettings)
-
-    #deviceSettings = [i.split()[0] for i in v4l2output]
-    #print(deviceSettings)
-    #deviceSettingsTypes = [i.split()[0] for i in v4l2output]
-    #print(deviceSettingsTypes)
-
 
     # set row in frame to 0 to start
     rowvar = 0
