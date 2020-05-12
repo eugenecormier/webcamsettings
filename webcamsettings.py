@@ -64,6 +64,7 @@ def callback(*args):
         # label
         globals()[i + 'Label'] = Label(subframe, text=i.capitalize().replace('_', ' '))
         globals()[i + 'Label'].grid(row=rowvar, column=0, sticky=(W) ,padx=xpadding, pady=ypadding)
+        ### BOOL SETUP ###
         if deviceSettings[i][0] == 'bool':
             # create and set variable
             globals()[i + 'Var'] = IntVar(name=i)
@@ -75,7 +76,41 @@ def callback(*args):
             else:
                 globals()[i + 'Checkbox'] = Checkbutton(subframe, text='(default: On)', variable = globals()[i + 'Var'], onvalue = 1, offvalue = 0, height=1)
                 globals()[i + 'Checkbox'].grid(row=rowvar, column=1, sticky=W)
-        else:
+        ### MENU SETUP ###
+        elif deviceSettings[i][0] == 'menu':
+            # create variable
+            globals()[i + 'Var'] = IntVar(name=i)
+            # get full v4l2 menu listing
+            v4l2menuoutput = subprocess.check_output(['v4l2-ctl', '-d', devicemenuVar.get(), '--list-ctrls-menus']).strip().decode().splitlines()
+            # figure out which lines are menu items, returns a list of lines []
+            m = 0
+            matches = []
+            while m < len(v4l2menuoutput):
+                if  v4l2menuoutput[m].find(i + ' ') != -1:
+                    n = m + 1
+                    while v4l2menuoutput[n].split()[0][0].isdigit():
+                        matches.append(n)
+                        n += 1
+                m += 1
+            # create dropdown menu item dict {'1': 'disabled'}
+            globals()[i + 'MenuItem'] = {}
+            for p in matches:
+                globals()[i + 'MenuItem'][v4l2menuoutput[p].split()[0][:-1]]  = ' '.join(v4l2menuoutput[p].split()[1:])
+            # create list for dropdown menu
+            globals()[i + 'DropDownMenu'] = []
+            for q in globals()[i + 'MenuItem']:
+                globals()[i + 'DropDownMenu'].append(globals()[i + 'MenuItem'][q])
+            # set variable before creating dropdown menu gui
+            globals()[i + 'Var'].set(deviceSettings[i][4][6:])
+            # make and set var that shows the menu text instead of numbers
+            globals()[i + 'VarText'] = StringVar()
+            globals()[i + 'VarText'].set(globals()[i + 'MenuItem'].get(str(globals()[i + 'Var'].get())))
+            # create dropdown menu gui
+            globals()[i + 'GuiMenu'] = OptionMenu(subframe, globals()[i + 'VarText'], *globals()[i + 'DropDownMenu'])
+            globals()[i + 'GuiMenu'].grid(row=rowvar, column=1, sticky=W)
+            globals()[i + 'VarText'].trace('w', change)
+        ### INT SETUP ###
+        elif deviceSettings[i][0] == 'int':
             # create and set variable
             globals()[i + 'Var'] = IntVar(name=i)
             globals()[i + 'Var'].set(deviceSettings[i][4][6:])
@@ -89,6 +124,7 @@ def callback(*args):
         rowvar = rowvar + 1
 
 def change(*args):
+    print(args[0])
     proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c " + args[0] + "=" + str(globals()[args[0] + 'Var'].get())], shell=True)
 
 
