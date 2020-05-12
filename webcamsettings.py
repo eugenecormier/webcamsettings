@@ -51,7 +51,7 @@ def callback(*args):
     for i in v4l2output:
         if len(i.split()) < 3:
             pass
-        if i.split()[2][1:-1] == 'bool':
+        elif i.split()[2][1:-1] == 'bool':
             deviceSettings[i.split()[0]] = [i.split()[2][1:-1], i.split()[4], i.split()[5]]
         elif i.split()[2][1:-1] == 'menu':
             deviceSettings[i.split()[0]] = [i.split()[2][1:-1], i.split()[4], i.split()[5], i.split()[6], i.split()[7]]
