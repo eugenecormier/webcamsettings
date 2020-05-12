@@ -64,7 +64,7 @@ def callback(*args):
         globals()[i + 'Label'].grid(row=rowvar, column=0, sticky=(W) ,padx=xpadding, pady=ypadding)
         if deviceSettings[i][0] == 'bool':
             # create and set variable
-            globals()[i + 'Var'] = IntVar()
+            globals()[i + 'Var'] = IntVar(name=i)
             globals()[i + 'Var'].set(deviceSettings[i][2][6:])
             # create checkbox
             if deviceSettings[i][1][8:] == '0':
@@ -76,7 +76,7 @@ def callback(*args):
         else:
             # create slider
             # create and set variable
-            globals()[i + 'Var'] = IntVar()
+            globals()[i + 'Var'] = IntVar(name=i)
             globals()[i + 'Var'].set(deviceSettings[i][4][6:])
             # create slider
             globals()[i + 'Slider'] = Scale(subframe, variable = globals()[i + 'Var'], from_=deviceSettings[i][1][4:], to=deviceSettings[i][2][4:], length=400, orient=HORIZONTAL)
@@ -84,41 +84,12 @@ def callback(*args):
             # tell user defaults
             globals()[i + 'Default'] = Label(subframe, text='(default: ' + deviceSettings[i][3][8:] + ')')
             globals()[i + 'Default'].grid(row=rowvar, column=2, sticky=(W) ,padx=xpadding, pady=ypadding)
-        globals()[i + 'Var'].trace('w', globals()[i])
+        globals()[i + 'Var'].trace('w', change)
         rowvar = rowvar + 1
 
-def brightness(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c brightness=" + str(brightnessVar.get())], shell=True)
+def change(*args):
+    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c " + args[0] + "=" + str(globals()[args[0] + 'Var'].get())], shell=True)
 
-def contrast(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c contrast=" + str(contrastVar.get())], shell=True)
-
-def saturation(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c saturation=" + str(saturationVar.get())], shell=True)
-
-def hue(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c hue=" + str(hueVar.get())], shell=True)
-
-def white_balance_temperature_auto(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c white_balance_temperature_auto=" + str(white_balance_temperature_autoVar.get())], shell=True)
-
-def gamma(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c gamma=" + str(gammaVar.get())], shell=True)
-
-def power_line_frequency(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c power_line_frequency=" + str(power_line_frequencyVar.get())], shell=True)
-
-def sharpness(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c sharpness=" + str(sharpnessVar.get())], shell=True)
-
-def exposure_auto(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c exposure_auto=" + str(exposure_autoVar.get())], shell=True)
-
-def exposure_absolute(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c exposure_absolute=" + str(exposure_absoluteVar.get())], shell=True)
-
-def exposure_auto_priority(*args):
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c exposure_auto_priority=" + str(exposure_auto_priorityVar.get())], shell=True)
 
 #####################################################################################################################
 # device dropdown menu
