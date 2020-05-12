@@ -49,6 +49,8 @@ def callback(*args):
     deviceSettings = {}
     # get data from cli
     for i in v4l2output:
+        if len(i.split()) < 3:
+            pass
         if i.split()[2][1:-1] == 'bool':
             deviceSettings[i.split()[0]] = [i.split()[2][1:-1], i.split()[4], i.split()[5]]
         elif i.split()[2][1:-1] == 'menu':
@@ -74,7 +76,6 @@ def callback(*args):
                 globals()[i + 'Checkbox'] = Checkbutton(subframe, text='(default: On)', variable = globals()[i + 'Var'], onvalue = 1, offvalue = 0, height=1)
                 globals()[i + 'Checkbox'].grid(row=rowvar, column=1, sticky=W)
         else:
-            # create slider
             # create and set variable
             globals()[i + 'Var'] = IntVar(name=i)
             globals()[i + 'Var'].set(deviceSettings[i][4][6:])
