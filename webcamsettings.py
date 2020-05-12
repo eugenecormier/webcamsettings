@@ -11,6 +11,7 @@ from tkinter import ttk
 ###################################################
 xpadding=5
 ypadding=5
+deviceSettings = {}
 
 ###################################################
 # Definitions
@@ -40,13 +41,13 @@ webcamdevlist = createwebcamdevlist()
 #####################################################################################################################
 # Main Function - watch for setting changes
 def callback(*args):
+    global deviceSettings
     # reset the frame
     for i in subframe.winfo_children():
         i.destroy()
     # grab v4l2 output and output to a dict
     v4l2output = subprocess.check_output(['v4l2-ctl', '-d', devicemenuVar.get(), '--list-ctrls']).strip().decode().splitlines()
     # this breaks out keys and value types and values into a dict
-    deviceSettings = {}
     # get data from cli
     for i in v4l2output:
         if len(i.split()) < 3:
@@ -76,6 +77,7 @@ def callback(*args):
             else:
                 globals()[i + 'Checkbox'] = Checkbutton(subframe, text='(default: On)', variable = globals()[i + 'Var'], onvalue = 1, offvalue = 0, height=1)
                 globals()[i + 'Checkbox'].grid(row=rowvar, column=1, sticky=W)
+            globals()[i + 'Var'].trace('w', change)
         ### MENU SETUP ###
         elif deviceSettings[i][0] == 'menu':
             # create variable
@@ -103,7 +105,7 @@ def callback(*args):
             # set variable before creating dropdown menu gui
             globals()[i + 'Var'].set(deviceSettings[i][4][6:])
             # make and set var that shows the menu text instead of numbers
-            globals()[i + 'VarText'] = StringVar()
+            globals()[i + 'VarText'] = StringVar(name=i)
             globals()[i + 'VarText'].set(globals()[i + 'MenuItem'].get(str(globals()[i + 'Var'].get())))
             # create dropdown menu gui
             globals()[i + 'GuiMenu'] = OptionMenu(subframe, globals()[i + 'VarText'], *globals()[i + 'DropDownMenu'])
@@ -120,12 +122,20 @@ def callback(*args):
             # tell user defaults
             globals()[i + 'Default'] = Label(subframe, text='(default: ' + deviceSettings[i][3][8:] + ')')
             globals()[i + 'Default'].grid(row=rowvar, column=2, sticky=(W) ,padx=xpadding, pady=ypadding)
-        globals()[i + 'Var'].trace('w', change)
+            globals()[i + 'Var'].trace('w', change)
         rowvar = rowvar + 1
 
 def change(*args):
-    print(args[0])
-    proc = subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c " + args[0] + "=" + str(globals()[args[0] + 'Var'].get())], shell=True)
+    # check if we're getting a string from a menu
+    if deviceSettings.get(args[0])[0] == 'menu':
+        # go through the dict looking for the given value and return the key(number)
+        for key, value in globals()[args[0] + 'MenuItem'].items():
+            # finally, set the int to the var and call v4l2
+            if globals()[args[0] + 'VarText'].get() == value:
+                subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c " + args[0] + "=" + key], shell=True)
+    # otherwise use standard int setting
+    else:
+        subprocess.run(["v4l2-ctl -d " + devicemenuVar.get() + " -c " + args[0] + "=" + str(globals()[args[0] + 'Var'].get())], shell=True)
 
 
 #####################################################################################################################
